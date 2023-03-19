@@ -109,8 +109,16 @@
             progressText.textContent = `${percentage.toFixed(1)}%`;
         }
 
+
+        
+        
         async function fetchVocabulary() {
             const response = await fetch('vocabulary.csv');
+            if (!response.ok) {
+                alert('无法加载词汇表，请检查vocabulary.csv文件是否存在。');
+                return;
+            }
+
             const text = await response.text();
             const lines = text.trim().split('\n');
             vocabulary = lines.map(line => {
@@ -120,6 +128,7 @@
             loadProgress();
             showRandomWord();
         }
+
 
         function showRandomWord() {
             const index = Math.floor(Math.random() * vocabulary.length);
