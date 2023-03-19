@@ -81,7 +81,6 @@
         <button id="bookmark-word">收藏单词</button>
         <button id="review-bookmarks">复习收藏</button>
     </div>
-    
     <script>
         const wordElement = document.getElementById('word');
         const definitionElement = document.getElementById('definition');
@@ -104,13 +103,9 @@
 
         function updateProgress() {
             const percentage = (wordsSeen / vocabulary.length) * 100;
-            progressBar.style.width = `${percentage
-            %}`;
+            progressBar.style.width = `${percentage}%`;
             progressText.textContent = `${percentage.toFixed(1)}%`;
         }
-
-
-        
         
         async function fetchVocabulary() {
             const response = await fetch('vocabulary.csv');
@@ -128,7 +123,6 @@
             loadProgress();
             showRandomWord();
         }
-
 
         function showRandomWord() {
             const index = Math.floor(Math.random() * vocabulary.length);
