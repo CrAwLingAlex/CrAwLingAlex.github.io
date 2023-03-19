@@ -40,6 +40,27 @@
         button:hover {
             background-color: #45a049;
         }
+        #progress-container {
+            width: 100%;
+            height: 20px;
+            background-color: #f3f3f3;
+            position: relative;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: #4CAF50;
+            position: absolute;
+        }
+        #progress-text {
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            font-size: 12px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -49,15 +70,44 @@
         
         <div id="word"></div>
         <div id="definition"></div>
+
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+            <div id="progress-text">0%</div>
+        </div>
         
         <button id="next-word">下一个单词</button>
         <button id="reveal-definition">显示释义</button>
+        <button id="bookmark-word">收藏单词</button>
+        <button id="review-bookmarks">复习收藏</button>
     </div>
     
     <script>
         const wordElement = document.getElementById('word');
         const definitionElement = document.getElementById('definition');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
         let vocabulary = [];
+        let bookmarks = [];
+        let wordsSeen = 0;
+
+        function saveProgress() {
+            localStorage.setItem('wordsSeen', wordsSeen);
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+        }
+
+        function loadProgress() {
+            wordsSeen = parseInt(localStorage.getItem('wordsSeen')) || 0;
+            bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const percentage = (wordsSeen / vocabulary.length) * 100;
+            progressBar.style.width = `${percentage
+            %}`;
+            progressText.textContent = `${percentage.toFixed(1)}%`;
+        }
 
         async function fetchVocabulary() {
             const response = await fetch('vocabulary.csv');
@@ -67,6 +117,7 @@
                 const [word, definition] = line.split(',');
                 return {word, definition};
             });
+            loadProgress();
             showRandomWord();
         }
 
@@ -78,12 +129,43 @@
             definitionElement.style.display = 'none';
         }
 
+        function bookmarkWord() {
+            const word = wordElement.textContent;
+            const definition = definitionElement.textContent;
+            bookmarks.push({word, definition});
+            saveProgress();
+        }
+
+        function reviewBookmarks() {
+            if (bookmarks.length === 0) {
+                alert('没有收藏的单词，请先收藏一些单词再试！');
+                return;
+            }
+
+            const index = Math.floor(Math.random() * bookmarks.length);
+            const {word, definition} = bookmarks[index];
+            wordElement.textContent = word;
+            definitionElement.textContent = definition;
+            definitionElement.style.display = 'block';
+        }
+
         document.getElementById('next-word').addEventListener('click', () => {
             showRandomWord();
+            wordsSeen++;
+            updateProgress();
+            saveProgress();
         });
 
         document.getElementById('reveal-definition').addEventListener('click', () => {
             definitionElement.style.display = 'block';
+        });
+
+        document.getElementById('bookmark-word').addEventListener('click', () => {
+            bookmarkWord();
+        });
+
+        document.getElementById('review-bookmarks').addEventListener('click', () => {
+            reviewBookmarks();
         });
 
         fetchVocabulary();
